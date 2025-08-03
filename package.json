@@ -1,0 +1,31 @@
+{
+  "name": "opentrons-document-mcp-server",
+  "version": "0.0.1",
+  "description": "Opentrons' MCP document server",
+  "license": "MIT",
+  "author": "koji",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "opentrons-document-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "docs"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "microcms-js-sdk": "^3.2.0",
+    "@modelcontextprotocol/sdk": "^1.15.0"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.15.0",
+    "@types/node": "^24.0.12",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}

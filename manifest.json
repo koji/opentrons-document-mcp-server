@@ -1,0 +1,46 @@
+{
+  "dxt_version": "0.1",
+  "name": "opentrons-document-mcp-server",
+  "display_name": "Opentrons Document MCP Server",
+  "version": "0.1.9",
+  "description": "This is a MCP Server for Opentrons' document. It allows LLM to access the latest information of Opentrons' document.",
+  "icon": "assets/icon.png",
+  "author": {
+    "name": "koji",
+    "url": "https://github.com/koji/opentrons-document-mcp-server"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"]
+    }
+  },
+  "tools": [
+    {
+      "name": "fetch_general",
+      "description": "This tool returns the general information of Opentrons."
+    },
+    {
+      "name": "list_documents",
+      "description": "This tool returns the list of available document files in the docs directory."
+    },
+    {
+      "name": "search_document",
+      "description": "This tool returns the content of the specified document file."
+    }
+  ],
+  "keywords": [
+    "opentrons",
+    "opentrons flex",
+    "opentrons ot-2",
+    "opentrons api",
+    "document"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/koji/opentrons-document-mcp-server"
+  }
+}
