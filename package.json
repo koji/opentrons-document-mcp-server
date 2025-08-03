@@ -19,7 +19,6 @@
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
-    "microcms-js-sdk": "^3.2.0",
     "@modelcontextprotocol/sdk": "^1.15.0"
   },
   "devDependencies": {
