@@ -6,6 +6,10 @@
   "author": "koji",
   "type": "module",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koji/opentrons-document-mcp-server.git"
+  },
   "bin": {
     "opentrons-document-mcp-server": "dist/index.js"
   },
