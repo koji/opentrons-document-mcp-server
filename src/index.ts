@@ -214,33 +214,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {
         const content = await fs.readFile(filePath, "utf-8");
         let responseText = `category: ${foundCategory}\nfile: ${filename}\n\n${content}`;
-
-        // 追加: カテゴリーごとのイントロを含める
-        // if (category === "content-api") {
-        //   const introPath = path.join(
-        //     DOCS_DIR,
-        //     "content-api",
-        //     "コンテンツAPIとは.md"
-        //   );
-        //   try {
-        //     const introContent = await fs.readFile(introPath, "utf-8");
-        //     responseText =
-        //       `【コンテンツAPIとは】\n${introContent}\n\n---\n` + responseText;
-        //   } catch {}
-        // } else if (category === "management-api") {
-        //   const introPath = path.join(
-        //     DOCS_DIR,
-        //     "management-api",
-        //     "マネジメントAPIとは.md"
-        //   );
-        //   try {
-        //     const introContent = await fs.readFile(introPath, "utf-8");
-        //     responseText =
-        //       `【マネジメントAPIとは】\n${introContent}\n\n---\n` +
-        //       responseText;
-        //   } catch {}
-        // }
-
         return {
           content: [
             {
