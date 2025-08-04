@@ -1,6 +1,6 @@
 {
   "name": "opentrons-document-mcp-server",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Opentrons' MCP document server",
   "license": "MIT",
   "author": "koji",
