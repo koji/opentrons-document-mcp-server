@@ -1,0 +1,85 @@
+name: Sync and Optimize Opentrons Docs
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build-and-sync:
+    runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the changes
+      contents: write
+
+    steps:
+      - name: Install oxipng
+        run: sudo apt-get update && sudo apt-get install -y oxipng
+
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          # We need to fetch all history to properly calculate changes
+          fetch-depth: 0
+
+      - name: Define folders to sync
+        id: folders
+        # List all the folders you want to sync here. This makes it easy to modify later.
+        run: echo "list=flex-manual hepa-uv pd-manual shared stacker-manual thermocycler-manual" >> $GITHUB_OUTPUT
+
+      - name: Clean up old docs to ensure a fresh copy
+        run: rm -rf ${{ steps.folders.outputs.list }}
+
+      - name: Download specific doc folders
+        run: |
+          # Convert the space-separated list into paths for sparse-checkout
+          SPARSE_PATHS=$(for folder in ${{ steps.folders.outputs.list }}; do echo "docs/$folder"; done)
+
+          echo "Setting up sparse checkout for:"
+          echo "$SPARSE_PATHS"
+
+          # Clone the opentrons repo with sparse-checkout enabled
+          git clone --depth 1 --filter=blob:none --sparse --branch edge https://github.com/Opentrons/opentrons.git opentrons-temp
+          cd opentrons-temp
+
+          # Set the sparse-checkout paths
+          git sparse-checkout set $SPARSE_PATHS
+
+          # Move the downloaded folders from 'docs' to the root of our repo
+          mv docs/* ../
+
+          # Clean up the temporary clone
+          cd ..
+          rm -rf opentrons-temp
+
+      - name: Optimize images and clean up build files
+        run: |
+          TARGET_DIRS="${{ steps.folders.outputs.list }}"
+
+          # Remove all mkdocs.yml files, as they are for the Opentrons build system
+          echo "Removing mkdocs.yml files..."
+          find $TARGET_DIRS -name "mkdocs.yml" -type f -delete
+
+          # Find all PNG files and optimize them
+          echo "Optimizing PNGs..."
+          find $TARGET_DIRS -name "*.png" -type f -exec oxipng -o 4 --strip safe {} +
+          echo "Optimization complete."
+
+      - name: Commit and push changes
+        run: |
+          # Configure git user
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Add all the new/updated documentation folders
+          git add ${{ steps.folders.outputs.list }}
+
+          # Commit the changes if there are any
+          if git diff --staged --quiet; then
+            echo "No changes to commit. The documentation is up-to-date."
+          else
+            git commit -m "docs: Sync and optimize docs from Opentrons repo"
+            git push
+          fi
