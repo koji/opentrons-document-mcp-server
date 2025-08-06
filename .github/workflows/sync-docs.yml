@@ -1,7 +1,6 @@
 name: Sync Docs and Create PR
 
 on:
-  # Schedule to run every day at 09:00 JST (00:00 UTC)
   schedule:
     - cron: '0 0 * * *'
 
@@ -17,17 +16,14 @@ jobs:
 
     steps:
       - name: Install latest oxipng from GitHub Releases
-        # Pass the GITHUB_TOKEN to the environment to use it in the script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Fetching latest oxipng version using authenticated API call..."
-          # Use an authenticated API call to avoid rate limits.
-          # Use jq for robust JSON parsing instead of grep.
-          API_RESPONSE=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/repos/shssoichiro/oxipng/releases/latest)
+          echo "Fetching latest oxipng version from the correct repository..."
+          # Use the correct repository URL: oxipng/oxipng
+          API_RESPONSE=$(curl -s -L -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/repos/oxipng/oxipng/releases/latest)
           OXIPNG_VERSION=$(echo "$API_RESPONSE" | jq -r '.tag_name' | sed 's/v//')
           
-          # Improved error checking
           if [ -z "$OXIPNG_VERSION" ] || [ "$OXIPNG_VERSION" == "null" ]; then
             echo "::error::Could not determine latest oxipng version."
             echo "API Response: $API_RESPONSE"
@@ -35,7 +31,8 @@ jobs:
           fi
           
           echo "Latest version found: v$OXIPNG_VERSION"
-          URL="https://github.com/shssoichiro/oxipng/releases/download/v${OXIPNG_VERSION}/oxipng-v${OXIPNG_VERSION}-x86_64-unknown-linux-musl.tar.gz"
+          # Construct the download URL with the correct repository path
+          URL="https://github.com/oxipng/oxipng/releases/download/v${OXIPNG_VERSION}/oxipng-v${OXIPNG_VERSION}-x86_64-unknown-linux-musl.tar.gz"
           
           echo "Downloading oxipng from $URL"
           curl -L --fail $URL | tar -xz
