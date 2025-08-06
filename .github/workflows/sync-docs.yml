@@ -57,6 +57,9 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
+          # This token is a Personal Access Token stored in your repository secrets.
+          # It has the necessary permissions to create a pull request.
+          token: ${{ secrets.ACTION_PAT }}
           commit-message: "docs: Sync docs for ${{ steps.date.outputs.date }}"
           branch: "docs/auto-sync"
           delete-branch: true
@@ -68,7 +71,6 @@ jobs:
             - ${{ steps.folders.outputs.list }}
 
             Please review the changes and merge if they are correct.
-          labels: documentation, automated
           assignees: koji
 
       - name: Output PR URL
