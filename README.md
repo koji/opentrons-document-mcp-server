@@ -11,6 +11,15 @@ this MCP server uses docs from [opentrons/opentrons/docs](https://github.com/ope
 
 ## how to use
 
+MCP clients can be configured to use this server by adding the following to their `mcpServers` section:
+
+- Claude Desktop app
+- Cursor✅
+- VSCode
+- Roo Code
+- Windsurf
+- Warp✅
+
 ```shell
 {
   "mcpServers": {
@@ -18,7 +27,7 @@ this MCP server uses docs from [opentrons/opentrons/docs](https://github.com/ope
       "command": "npx",
       "args": [
         "-y",
-        "opentrons-mcp-server@latest",
+        "opentrons-mcp-server@latest"
       ]
     }
   }
