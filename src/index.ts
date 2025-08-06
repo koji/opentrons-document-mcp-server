@@ -17,13 +17,12 @@ const DOCS_DIR = path.join(__dirname, '..', 'docs')
 
 // doc categories
 const AVAILABLE_CATEGORIES = [
-  'manual',
-  'basic_api',
-  'basic_commands',
-  'complex_commands',
-  'modules',
-  'parameters',
-  'pipettes',
+  'pd-manual',
+  'stacker-manual',
+  'flex-manual',
+  'hepa-uv',
+  'shared',
+  'thermocycler-manual',
   'dev_setup',
 ] as const
 type Category = (typeof AVAILABLE_CATEGORIES)[number]
@@ -65,13 +64,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
               description:
                 'Search categories:(manual,basic_api,basic_commands, complex_commands, modules, parameters, and pipettes).If no category is specified, all categories will be targeted',
               enum: [
-                'manual',
-                'basic_api',
-                'basic_commands',
-                'complex_commands',
-                'modules',
-                'parameters',
-                'pipettes',
+                'pd-manual',
+                'stacker-manual',
+                'flex-manual',
+                'hepa-uv',
+                'shared',
+                'thermocycler-manual',
                 'dev_setup',
               ],
             },
@@ -96,13 +94,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
               description:
                 'Search categories:(manual,basic_api,basic_commands, complex_commands, modules, parameters, and pipettes). If no category is specified, all categories will be targeted',
               enum: [
-                'manual',
-                'basic_api',
-                'basic_commands',
-                'complex_commands',
-                'modules',
-                'parameters',
-                'pipettes',
+                'pd-manual',
+                'stacker-manual',
+                'flex-manual',
+                'hepa-uv',
+                'shared',
+                'thermocycler-manual',
                 'dev_setup',
               ],
             },
