@@ -1,4 +1,4 @@
-name: Sync and Optimize Opentrons Docs
+name: Sync Docs and Create PR
 
 on:
   schedule:
@@ -11,75 +11,91 @@ jobs:
   build-and-sync:
     runs-on: ubuntu-latest
     permissions:
-      # Give the default GITHUB_TOKEN write permission to commit and push the changes
+      # Required to checkout the code, create a branch, and push changes
       contents: write
+      # Required to create a pull request
+      pull-requests: write
 
     steps:
-      - name: Install oxipng
-        run: sudo apt-get update && sudo apt-get install -y oxipng
+      - name: Install latest oxipng from GitHub Releases
+        run: |
+          echo "Fetching latest oxipng version from GitHub API..."
+          OXIPNG_VERSION=$(curl -s "https://api.github.com/repos/shssoichiro/oxipng/releases/latest" | grep -Po '"tag_name": "v\K[0-9.]+')
+          
+          if [ -z "$OXIPNG_VERSION" ]; then
+            echo "::error::Could not determine latest oxipng version. Exiting."
+            exit 1
+          fi
+          
+          echo "Latest version found: v$OXIPNG_VERSION"
+          URL="https://github.com/shssoichiro/oxipng/releases/download/v${OXIPNG_VERSION}/oxipng-v${OXIPNG_VERSION}-x86_64-unknown-linux-musl.tar.gz"
+          
+          echo "Downloading oxipng from $URL"
+          curl -L $URL | tar -xz
+          
+          echo "Installing oxipng to /usr/local/bin"
+          sudo mv oxipng-v${OXIPNG_VERSION}-x86_64-unknown-linux-musl/oxipng /usr/local/bin/
+          
+          echo -n "Verifying installation: "
+          oxipng --version
 
       - name: Checkout this repository
         uses: actions/checkout@v4
-        with:
-          # We need to fetch all history to properly calculate changes
-          fetch-depth: 0
 
       - name: Define folders to sync
         id: folders
-        # List all the folders you want to sync here. This makes it easy to modify later.
         run: echo "list=flex-manual hepa-uv pd-manual shared stacker-manual thermocycler-manual" >> $GITHUB_OUTPUT
 
-      - name: Clean up old docs to ensure a fresh copy
-        run: rm -rf ${{ steps.folders.outputs.list }}
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Clean up old docs directory
+        run: rm -rf docs
 
       - name: Download specific doc folders
         run: |
-          # Convert the space-separated list into paths for sparse-checkout
           SPARSE_PATHS=$(for folder in ${{ steps.folders.outputs.list }}; do echo "docs/$folder"; done)
-
           echo "Setting up sparse checkout for:"
           echo "$SPARSE_PATHS"
-
-          # Clone the opentrons repo with sparse-checkout enabled
           git clone --depth 1 --filter=blob:none --sparse --branch edge https://github.com/Opentrons/opentrons.git opentrons-temp
           cd opentrons-temp
-
-          # Set the sparse-checkout paths
           git sparse-checkout set $SPARSE_PATHS
-
-          # Move the downloaded folders from 'docs' to the root of our repo
-          mv docs/* ../
-
-          # Clean up the temporary clone
+          mkdir -p ../docs
+          mv docs/* ../docs/
           cd ..
           rm -rf opentrons-temp
 
       - name: Optimize images and clean up build files
         run: |
-          TARGET_DIRS="${{ steps.folders.outputs.list }}"
-
-          # Remove all mkdocs.yml files, as they are for the Opentrons build system
+          TARGET_DIR="docs"
+          if [ ! -d "$TARGET_DIR" ]; then
+            echo "Target directory '$TARGET_DIR' not found. Skipping."
+            exit 0
+          fi
           echo "Removing mkdocs.yml files..."
-          find $TARGET_DIRS -name "mkdocs.yml" -type f -delete
-
-          # Find all PNG files and optimize them
+          find $TARGET_DIR -name "mkdocs.yml" -type f -delete
           echo "Optimizing PNGs..."
-          find $TARGET_DIRS -name "*.png" -type f -exec oxipng -o 4 --strip safe {} +
+          find $TARGET_DIR -name "*.png" -type f -exec oxipng -o 4 --strip safe {} +
           echo "Optimization complete."
 
-      - name: Commit and push changes
-        run: |
-          # Configure git user
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "docs: Sync and optimize docs for ${{ steps.date.outputs.date }}"
+          branch: "docs/auto-sync"
+          delete-branch: true
+          title: "Automated Docs Sync (${{ steps.date.outputs.date }})"
+          body: |
+            This is an automated PR to sync the latest documentation from the Opentrons repository.
 
-          # Add all the new/updated documentation folders
-          git add ${{ steps.folders.outputs.list }}
+            The following folders have been updated:
+            * `${{ steps.folders.outputs.list }}`
 
-          # Commit the changes if there are any
-          if git diff --staged --quiet; then
-            echo "No changes to commit. The documentation is up-to-date."
-          else
-            git commit -m "docs: Sync and optimize docs from Opentrons repo"
-            git push
-          fi
+            Please review the changes and merge if they are correct.
+          labels: documentation, automated
+          assignees: koji
+
+      - name: Output PR URL
+        run: echo "Pull Request URL: ${{ steps.cpr.outputs.pull-request-url }}"
