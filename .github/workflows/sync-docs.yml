@@ -26,8 +26,16 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Clean up old docs directory
-        run: rm -rf docs
+      - name: Clean up old synced directories
+        run: |
+          # Only remove the specific directories that will be re-downloaded.
+          # This prevents deleting other files/folders like 'docs/dev_setup/'.
+          for folder in ${{ steps.folders.outputs.list }}; do
+            if [ -d "docs/$folder" ]; then
+              echo "Removing docs/$folder"
+              rm -rf "docs/$folder"
+            fi
+          done
 
       - name: Download specific doc folders
         run: |
@@ -37,7 +45,10 @@ jobs:
           git clone --depth 1 --filter=blob:none --sparse --branch edge https://github.com/Opentrons/opentrons.git opentrons-temp
           cd opentrons-temp
           git sparse-checkout set $SPARSE_PATHS
+          # Ensure the target docs directory exists before moving content into it.
           mkdir -p ../docs
+          # Move the downloaded content into the docs directory.
+          # The `*` will move the individual folders (flex-manual, etc.).
           mv docs/* ../docs/
           cd ..
           rm -rf opentrons-temp
