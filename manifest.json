@@ -1,8 +1,8 @@
 {
-  "dxt_version": "0.0.2",
+  "dxt_version": "0.0.4",
   "name": "opentrons-document-mcp-server",
   "display_name": "Opentrons Document MCP Server",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "This is a MCP Server for Opentrons' document. It allows LLM to access the latest information of Opentrons' document.",
   "icon": "assets/icon.png",
   "author": {
