@@ -33,3 +33,5 @@ MCP clients can be configured to use this server by adding the following to thei
   }
 }
 ```
+
+<img width="575" height="1842" alt="Image" src="https://github.com/user-attachments/assets/bb845573-afb8-4dc8-8521-a993ab2732fe" />
